@@ -2,11 +2,11 @@ import crypto from 'crypto-browserify';
 import events from 'events';
 import keypair from 'keypair';
 
-const algorithm = 'aes-256-cbc';
+const cipher_algorithm = 'aes-256-cbc';
 const encryptWithAES256CBC = (key, plaintext) => {
   let iv = Buffer.alloc(16);
   iv = Buffer.from(Array.prototype.map.call(iv, () => { return Math.floor(Math.random() * 256) }));
-  let cipher = crypto.createCipheriv(algorithm, key, iv);
+  let cipher = crypto.createCipheriv(cipher_algorithm, key, iv);
   let ciphertext = cipher.update(plaintext, 'utf8', 'hex');
   ciphertext += cipher.final('hex');
   return { ciphertext, iv: iv.toString('hex') };
@@ -14,7 +14,7 @@ const encryptWithAES256CBC = (key, plaintext) => {
 
 const decryptWithAES256CBC = (key, hexIV, ciphertext) => {
   let iv = Buffer.from(hexIV, 'hex')
-  let decipher = crypto.createDecipheriv(algorithm, key, iv);
+  let decipher = crypto.createDecipheriv(cipher_algorithm, key, iv);
   let plaintext = decipher.update(ciphertext, 'hex', 'utf8');
   plaintext += decipher.final('utf8');
   return plaintext;
@@ -22,6 +22,19 @@ const decryptWithAES256CBC = (key, hexIV, ciphertext) => {
 
 const encryptWithRSA = (publicKey, data) => {
   return crypto.publicEncrypt(publicKey, data);
+}
+
+const SHA256 = (data) => {
+  var hash = crypto.createHash('sha256');
+  hash.update(data);
+  return hash.digest();
+}
+
+const hmac_algorithm = 'sha256';
+const HMAC = (key, data) => {
+  const hmac = crypto.createHmac(hmac_algorithm, key);
+  hmac.update(data);
+  return hmac.digest('hex');
 }
 
 const State = {
@@ -43,9 +56,9 @@ class SecuredConnection {
     this.setState(State.CONNECTING);
     res = await fetch(this.host, {
       method: 'post',
-      mode: "cors", 
+      mode: "cors",
       headers: {
-          "Content-Type": "application/json; charset=utf-8",
+        "Content-Type": "application/json; charset=utf-8",
       },
       body: JSON.stringify({ type: 'handshake' })
     }).then(res => res.json());
@@ -63,27 +76,36 @@ class SecuredConnection {
     // console.log('hi',buffer); 
 
     // Diffie Hellman
-    const dh = crypto.getDiffieHellman('modp5');
-    const dhKey = dh.generateKeys();
+    const cipher_dh = crypto.getDiffieHellman('modp5');
+    const cipher_dhKey = cipher_dh.generateKeys();
 
-    const dhKeyCiphertext = encryptWithRSA(publicKey, dhKey).toString('hex');
+    const hmac_dh = crypto.getDiffieHellman('modp5');
+    const hmac_dhKey = hmac_dh.generateKeys();
+
+    const cipher_dhKeyCiphertext = encryptWithRSA(publicKey, cipher_dhKey).toString('hex');
+    const hmac_dhKeyCiphertext = encryptWithRSA(publicKey, hmac_dhKey).toString('hex');
 
     res = await fetch(this.host, {
       method: 'post',
-      mode: "cors", 
+      mode: "cors",
       headers: {
-          "Content-Type": "application/json; charset=utf-8",
+        "Content-Type": "application/json; charset=utf-8",
       },
-      body: JSON.stringify({ type: 'diffie-hellman', clientKey: dhKeyCiphertext })
+      body: JSON.stringify({ type: 'diffie-hellman', cipher_clientKey: cipher_dhKeyCiphertext, hmac_clientKey: hmac_dhKeyCiphertext })
     }).then(res => res.json());
     this.session_id = res.session_id;
-    const serverKey = Buffer.from(res.serverKey, 'hex');
-    const dhSessionKey = dh.computeSecret(serverKey);
+    // server dh key for cipher
+    const cipherServerKey = Buffer.from(res.cipherKey, 'hex');
+    const cipherKey = cipher_dh.computeSecret(cipherServerKey);
+    // server dh for hmac
+    const hmacServerKey = Buffer.from(res.hmacKey, 'hex');
+    const hmacKey = hmac_dh.computeSecret(hmacServerKey);
+
 
     // hash session key (1024 bits) -> (256 bits)
-    const hash = crypto.createHash('sha256');
-    hash.update(dhSessionKey);
-    this.session_key = hash.digest();
+    
+    this.cipher_key = SHA256(cipherKey);
+    this.hmac_key = SHA256(hmacKey);
 
     this.setState(State.CONNECTED);
   }
@@ -101,12 +123,14 @@ class SecuredConnection {
 
   fetch(endpoint, data) {
     const dataString = JSON.stringify(data);
-    const encrypted = encryptWithAES256CBC(this.session_key, dataString);
+    var hmac = HMAC(this.hmac_key, dataString);
+    var dataWithHMAC = JSON.stringify({data: dataString, hmac: hmac});
+    const encrypted = encryptWithAES256CBC(this.cipher_key, dataWithHMAC);
     return fetch(this.host + '/' + endpoint, {
       method: 'post',
-      mode: "cors", 
+      mode: "cors",
       headers: {
-          "Content-Type": "application/json; charset=utf-8",
+        "Content-Type": "application/json; charset=utf-8",
       },
       body: JSON.stringify({
         session_id: this.session_id,
@@ -115,15 +139,21 @@ class SecuredConnection {
     }).then(res => res.json())
       .then(res => {
         const { data } = res;
-        if(data){
-         const { ciphertext, iv } = data;
-         const plaintext = decryptWithAES256CBC(this.session_key, iv, ciphertext);
-         return JSON.parse(plaintext);
-        }else{
+        if (data) {
+          const { ciphertext, iv } = data;
+          const plaintext = decryptWithAES256CBC(this.cipher_key, iv, ciphertext);
+          const dataWithHMAC = JSON.parse(plaintext);
+          const hmacComputed = HMAC(this.hmac_key, dataWithHMAC.data)
+          if(dataWithHMAC.hmac !== hmacComputed){
+            // HMAC verification failed, data was changed
+              throw new Error('HMAC does not match data...');
+          }
+          return JSON.parse(dataWithHMAC.data);
+        } else {
           throw new Error('Cannot find response data...');
         }
       })
-      .then(res => {console.log(res)});
+      .then(res => { console.log(res) });
   }
 }
 
