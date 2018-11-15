@@ -101,9 +101,7 @@ class SecuredConnection {
     const hmacServerKey = Buffer.from(res.hmacKey, 'hex');
     const hmacKey = hmac_dh.computeSecret(hmacServerKey);
 
-
     // hash session key (1024 bits) -> (256 bits)
-    
     this.cipher_key = SHA256(cipherKey);
     this.hmac_key = SHA256(hmacKey);
 

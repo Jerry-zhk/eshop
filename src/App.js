@@ -1,47 +1,27 @@
 import React, { Component } from 'react';
-import SecuredConnect from './SecuredConnection';
+import { Switch, withRouter, Link } from 'react-router-dom';
+import AppRoute from './AppRoute';
+import Home from './pages/home';
+import Login from './pages/login';
+import Register from './pages/register';
 
 
 class App extends Component {
 
-  constructor(props){
-    super(props);
-    this.state = {
-      val: ''
-    }
-    this.handleChange = this.handleChange.bind(this);
-  }
-
-  componentWillMount() {
-    this.connection = new SecuredConnect('http://localhost:3300');
-    this.connection.onStateChange(state => {
-      this.forceUpdate();
-    });
-    this.connection.start();
-  }
-
-  click = () => {
-    this.connection.fetch('pay', {name: this.state.val});
-  }
-  
-  handleChange(event) {
-    this.setState({val: event.target.value});
-  }
-
-
   render() {
-    return this.connection && this.connection.state === SecuredConnect.State.CONNECTED ? (
+    return (
       <div>
-        Hi, your session_id is {this.connection.session_id}
-        <br/>
-        <input type="text" value={this.state.val} onChange={this.handleChange} />
-        <button onClick={this.click}>click</button>
+        <Link to='/'>Home</Link>  &nbsp;
+        <Link to='/login'>Login</Link> &nbsp;
+        <Link to='/register'>Register</Link>
+        <Switch>
+          <AppRoute exact path='/' component={Home} />
+          <AppRoute path='/login' component={Login} />
+          <AppRoute path='/register' component={Register} />
+        </Switch>
       </div>
-      
-    ):(
-      <div>Loading</div>
     );
   }
 }
 
-export default App;
+export default withRouter(App);
