@@ -25,7 +25,7 @@ class Login extends Component {
     super();
     this.state = {
       data: {
-        email: '',
+        username: '',
         password: ''
       },
       errors: {}
@@ -44,10 +44,11 @@ class Login extends Component {
   }
   validate() {
     var constraints = {
-      email: {
+      username: {
         presence: true,
-        email: {
-          message: "%{value} is not a valid email"
+        length: {
+          minimum: 6,
+          message: "must be at least 6 characters"
         }
       },
       password: {
@@ -66,7 +67,7 @@ class Login extends Component {
     if (errors.constructor === Object && Object.keys(errors).length === 0) {
       // submit form to login using email & password
       console.log(errors)
-      this.props.login();
+      this.props.login(data.username, data.password);
     }
   }
 
@@ -82,12 +83,12 @@ class Login extends Component {
               <CardContent>
                 {/* Form */}
                 <form onSubmit={this.handleSubmit}>
-                  <FormControl error={(this.state.errors.email !== undefined)} fullWidth>
-                    <InputLabel htmlFor="email">Email Address</InputLabel>
-                    <Input id="email" name="email" type="email"
-                      value={this.state.data.email} onChange={this.handleChange}
+                  <FormControl error={(this.state.errors.username !== undefined)} fullWidth>
+                    <InputLabel htmlFor="username">Username</InputLabel>
+                    <Input id="username" name="username" type="text"
+                      value={this.state.data.username} onChange={this.handleChange}
                       endAdornment={<InputAdornment><Icon>account_circle</Icon></InputAdornment>} />
-                    <FormHelperText>{this.state.errors.email}</FormHelperText>
+                    <FormHelperText>{this.state.errors.username}</FormHelperText>
                   </FormControl>
                   <FormControl error={(this.state.errors.password !== undefined)} fullWidth>
                     <InputLabel htmlFor="password">Password</InputLabel>
