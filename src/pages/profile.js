@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withContext } from '../context'
 
-class Home extends Component {
+class Profile extends Component {
 
   constructor(props){
     super(props);
@@ -10,14 +10,13 @@ class Home extends Component {
   render() {
     return (
       <div>
+        User: 
         {
-          this.props.user ? 
-          `Welcome ${this.props.user}`:
-          'Home, not logged in'
+          this.props.user
         }
       </div>
     )
   }
 }
 
-export default withContext(Home);
+export default withContext(Profile);

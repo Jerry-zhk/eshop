@@ -120,20 +120,24 @@ class SecuredConnection {
   }
 
   fetch(endpoint, data) {
-    const dataString = JSON.stringify(data);
-    var hmac = HMAC(this.hmac_key, dataString);
-    var dataWithHMAC = JSON.stringify({data: dataString, hmac: hmac});
-    const encrypted = encryptWithAES256CBC(this.cipher_key, dataWithHMAC);
-    return fetch(this.host + '/' + endpoint, {
+    let body = {
+      session_id: this.session_id,
+    }
+    if(data){
+      const dataString = JSON.stringify(data);
+      var hmac = HMAC(this.hmac_key, dataString);
+      var dataWithHMAC = JSON.stringify({data: dataString, hmac: hmac});
+      const encrypted = encryptWithAES256CBC(this.cipher_key, dataWithHMAC);
+      body.data = encrypted;
+    }
+    return fetch(this.host + endpoint, {
       method: 'post',
       mode: "cors",
+      credentials: 'include',
       headers: {
         "Content-Type": "application/json; charset=utf-8",
       },
-      body: JSON.stringify({
-        session_id: this.session_id,
-        data: encrypted
-      })
+      body: JSON.stringify(body)
     }).then(res => res.json())
       .then(res => {
         const { data } = res;
@@ -150,8 +154,7 @@ class SecuredConnection {
         } else {
           throw new Error('Cannot find response data...');
         }
-      })
-      .then(res => { console.log(res) });
+      });
   }
 }
 
