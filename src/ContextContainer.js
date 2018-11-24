@@ -11,9 +11,9 @@ class ContextComponent extends Component {
   }
 
   componentWillMount() {
-    this.connection = new SecuredConnect('http://localhost:3300');
+    this.connection = new SecuredConnect('http://localhost:3300/client');
     this.connection.onStateChange(state => {
-      if(state == SecuredConnect.State.CONNECTED){
+      if(state === SecuredConnect.State.CONNECTED){
         this.getProfile(() => {
           this.forceUpdate();
         });
@@ -23,41 +23,46 @@ class ContextComponent extends Component {
   }
 
   // Authentication
-  register = () => {
+  register = (username, password) => {
     console.log('register')
+    return this.connection.fetch('/register', {username: username, password: password})
+      .then(res => {
+        if(res.error) return res.error;
+        this.setState({ user: res.user });
+      })
   }
 
   login = (username, password) => {
     console.log('login');
-    return this.connection.fetch('/auth/login', {username: username, pw: password})
+    return this.connection.fetch('/login', {username: username, pw: password})
       .then(res => {
-        this.setState({ user: res.user_id });
+        console.log(res)
+        if(res.error) return res.error;
+        this.setState({ user: res.user });
       })
   }
 
   getProfile = (callback) => {
-    return this.connection.fetch('/auth/my-profile', {a:1, b:2})
+    return this.connection.fetch('/my-profile')
     .then(res => {
-      if(!res.hasOwnProperty('failure')){
-        this.setState({ user: res.user_id }, callback);
-      }else{
+      if(res.no_credentials){
         callback();
+      }else{
+        this.setState({ user: res.user }, callback);
       }
+    }).catch(err => {
+      console.log(err)
     })
-
   }
 
   logout = () => {
     console.log('logout')
-    return this.connection.fetch('/auth/logout', {})
+    return this.connection.fetch('/logout')
       .then(res => {
         this.setState({ user: null });
       })
   }
 
-  register = () => {
-    console.log('register')
-  }
 
   render() {
     return (

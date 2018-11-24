@@ -26,7 +26,8 @@ class Register extends Component {
     super();
     this.state = {
       data: {
-        email: '',
+        username: '',
+        display_name: '',
         password: '',
         confirm_password: ''
       },
@@ -52,10 +53,11 @@ class Register extends Component {
   }
   validate() {
     var constraints = {
-      email: {
+      username: {
         presence: true,
-        email: {
-          message: "%{value} is not a valid email"
+        length: {
+          minimum: 6,
+          message: "must be at least 6 characters"
         }
       },
       password: {
@@ -73,9 +75,15 @@ class Register extends Component {
     return errors === undefined ? {} : errors;
   }
   proceed() {
-    const { errors } = this.state;
+    console.log('what')
+    const { errors, data } = this.state;
     if (errors.constructor === Object && Object.keys(errors).length === 0) {
-      this.props.register();
+      console.log('dsjadjs')
+      this.props.register(data.username, data.password).then(err => {
+        console.log(err)
+        if(err)
+          this.setState({ errors: err });
+      });
     }
   }
 
@@ -90,12 +98,12 @@ class Register extends Component {
               <CardContent>
                 {/* Form */}
                 <form onSubmit={this.handleSubmit}>
-                  <FormControl error={(this.state.errors.email !== undefined)} fullWidth>
-                    <InputLabel htmlFor="email">Email Address</InputLabel>
-                    <Input id="email" name="email" type="email" 
-                      value={this.state.data.email} onChange={this.handleChange}
+                  <FormControl error={(this.state.errors.username !== undefined)} fullWidth>
+                    <InputLabel htmlFor="username">Username</InputLabel>
+                    <Input id="username" name="username" type="text" 
+                      value={this.state.data.username} onChange={this.handleChange}
                       endAdornment={<InputAdornment><Icon>account_circle</Icon></InputAdornment>} />
-                    <FormHelperText>{this.state.errors.email}</FormHelperText>
+                    <FormHelperText>{this.state.errors.username}</FormHelperText>
                   </FormControl>
                   <FormControl error={(this.state.errors.password !== undefined)} fullWidth>
                     <InputLabel htmlFor="password">Password</InputLabel>

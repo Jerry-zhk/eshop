@@ -8,12 +8,12 @@ class Profile extends Component {
   }
 
   render() {
+    const { username, display_name, balance } = this.props.user;
     return (
       <div>
-        User: 
-        {
-          this.props.user
-        }
+        Username: {username}<br/>
+        Name: {display_name}<br/>
+        Balance: {balance}<br/>
       </div>
     )
   }
