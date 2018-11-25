@@ -56,8 +56,12 @@ class Pay extends Component {
       .then(res => {
         if(res.error){
           console.log(res.error)
+          if(window.paymentCompletedOrCancelled)
+            window.paymentCompletedOrCancelled(false);
         }else{
           console.log('paid', res)
+          if(window.paymentCompletedOrCancelled)
+            window.paymentCompletedOrCancelled(true);
         }
       })
 

@@ -1,6 +1,5 @@
 import crypto from 'crypto-browserify';
 import events from 'events';
-import keypair from 'keypair';
 
 const cipher_algorithm = 'aes-256-cbc';
 const encryptWithAES256CBC = (key, plaintext) => {
@@ -61,7 +60,10 @@ class SecuredConnection {
         "Content-Type": "application/json; charset=utf-8",
       },
       body: JSON.stringify({ type: 'handshake' })
-    }).then(res => res.json());
+    }).then(res => {
+      console.log(res)
+      return res.json()
+    });
 
     // RSA public key from server
     const publicKey = res.publicKey;
@@ -92,7 +94,10 @@ class SecuredConnection {
         "Content-Type": "application/json; charset=utf-8",
       },
       body: JSON.stringify({ type: 'diffie-hellman', cipher_clientKey: cipher_dhKeyCiphertext, hmac_clientKey: hmac_dhKeyCiphertext })
-    }).then(res => res.json());
+    }).then(res => {
+      console.log(res)
+      return res.json()
+    });
     this.session_id = res.session_id;
     // server dh key for cipher
     const cipherServerKey = Buffer.from(res.cipherKey, 'hex');

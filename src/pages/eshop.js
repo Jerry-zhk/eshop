@@ -8,7 +8,7 @@ class EShop extends Component {
       items: [],
       order_items: [],
       checkingOut: false,
-      pay_url: ''
+      payment_url: null
     }
   }
 
@@ -49,9 +49,7 @@ class EShop extends Component {
     }).then(res => res.json())
       .then(res => {
 
-        this.setState({ checkingOut: true, pay_url: res.url })
-        console.log('checkout')
-        console.log(res)
+        this.setState({ checkingOut: true, payment_url: res.url })
       })
   }
 
@@ -59,8 +57,21 @@ class EShop extends Component {
     return this.state.items.find(item => item.id === id);
   }
 
+  openURL = () => {
+    const { payment_url } = this.state;
+    if(payment_url){
+      const win = window.open(payment_url, "_blank", "toolbar=no,scrollbars=yes,resizable=no,top=150,left=150,width=500,height=500");
+      win.onload = () =>{
+        win.paymentCompletedOrCancelled = (completed) => { 
+          if(completed) alert('paid!!');
+          else alert('failed')
+        }
+      }
+    }
+  }
+
   render() {
-    const { items, order_items, checkingOut, pay_url } = this.state;
+    const { items, order_items, checkingOut, payment_url } = this.state;
 
 
     return (
@@ -82,7 +93,7 @@ class EShop extends Component {
                 }
                   
                 )}
-                <a href={pay_url} target="_blank">Pay</a>
+                <a href="javascript:void(0)" onClick={this.openURL} target="_blank">Pay</a>
               </div>
             )
             :
