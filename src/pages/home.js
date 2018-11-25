@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { withContext } from '../context'
 
 class Home extends Component {
-
   constructor(props){
     super(props);
   }
