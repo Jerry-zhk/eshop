@@ -1,12 +1,7 @@
 import React, { Component } from 'react';
 import validatejs from 'validate.js';
-
+import { withStyles } from '@material-ui/core/styles'
 import Grid from '@material-ui/core/Grid';
-
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
 
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
@@ -14,11 +9,20 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 
+import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
 
 import { withContext } from '../context';
+
+
+const styles = {
+  paper: {
+    marginTop: '20px',
+    padding: '20px'
+  }
+};
 
 class Login extends Component {
   constructor() {
@@ -68,8 +72,8 @@ class Login extends Component {
       // submit form to login using email & password
       console.log(errors)
       this.props.login(data.username, data.password).then(err => {
-        if(err)
-          this.setState({errors: err});
+        if (err)
+          this.setState({ errors: err });
       });
     }
   }
@@ -79,34 +83,31 @@ class Login extends Component {
       <div>
         <Grid container justify="center" alignItems="center" className="parent-size">
           <Grid item xs={12} sm={6} md={5} lg={3}>
-            {/* Card */}
-            <Card>
-              <CardHeader
-                title="Log in" />
-              <CardContent>
-                {/* Form */}
-                <form onSubmit={this.handleSubmit}>
-                  <FormControl error={(this.state.errors.username !== undefined)} fullWidth>
-                    <InputLabel htmlFor="username">Username</InputLabel>
-                    <Input id="username" name="username" type="text"
-                      value={this.state.data.username} onChange={this.handleChange}
-                      endAdornment={<InputAdornment><Icon>account_circle</Icon></InputAdornment>} />
-                    <FormHelperText>{this.state.errors.username}</FormHelperText>
-                  </FormControl>
-                  <FormControl error={(this.state.errors.password !== undefined)} fullWidth>
-                    <InputLabel htmlFor="password">Password</InputLabel>
-                    <Input id="password" name="password" type="password"
-                      value={this.state.data.password} onChange={this.handleChange}
-                      endAdornment={<InputAdornment><Icon>lock</Icon></InputAdornment>} />
-                    <FormHelperText>{this.state.errors.password}</FormHelperText>
-                  </FormControl>
+            <Paper className={this.props.classes.paper}>
+              <Typography variant="h6">Log in</Typography>
+              <hr/>
+              {/* Form */}
+              <form onSubmit={this.handleSubmit}>
+                <FormControl error={(this.state.errors.username !== undefined)} fullWidth>
+                  <InputLabel htmlFor="username">Username</InputLabel>
+                  <Input id="username" name="username" type="text"
+                    value={this.state.data.username} onChange={this.handleChange}
+                    endAdornment={<InputAdornment><Icon>account_circle</Icon></InputAdornment>} />
+                  <FormHelperText>{this.state.errors.username}</FormHelperText>
+                </FormControl>
+                <FormControl error={(this.state.errors.password !== undefined)} fullWidth>
+                  <InputLabel htmlFor="password">Password</InputLabel>
+                  <Input id="password" name="password" type="password"
+                    value={this.state.data.password} onChange={this.handleChange}
+                    endAdornment={<InputAdornment><Icon>lock</Icon></InputAdornment>} />
+                  <FormHelperText>{this.state.errors.password}</FormHelperText>
+                </FormControl>
 
-                  <Button color="primary" variant="contained" type="submit" size="medium" fullWidth>Log in</Button>
-                </form>
-                {/* End of form */}
-              </CardContent>
-            </Card>
-            {/* End of card */}
+                <Button color="primary" variant="contained" type="submit" size="medium" fullWidth>Log in</Button>
+              </form>
+              {/* End of form */}
+            </Paper>
+
           </Grid>
         </Grid>
       </div>
@@ -114,4 +115,4 @@ class Login extends Component {
   }
 }
 
-export default withContext(Login);
+export default withContext(withStyles(styles)(Login));

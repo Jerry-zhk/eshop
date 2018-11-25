@@ -1,5 +1,12 @@
 import React, { Component } from 'react';
 
+const PaymentState = {
+  Pending: 0,
+  Paying: 1,
+  PaymentCompleted: 2,
+  PaymentCancelled: 3
+}
+
 class EShop extends Component {
 
   constructor(props) {
@@ -8,7 +15,9 @@ class EShop extends Component {
       items: [],
       order_items: [],
       checkingOut: false,
-      payment_url: null
+      payment_url: null,
+      paymentStatus: PaymentState.Pending,
+      updated: false
     }
   }
 
@@ -17,7 +26,6 @@ class EShop extends Component {
       .then(res => res.json())
       .then(items => {
         this.setState({ items });
-        console.log(this.state.items)
       })
   }
 
@@ -59,19 +67,49 @@ class EShop extends Component {
 
   openURL = () => {
     const { payment_url } = this.state;
-    if(payment_url){
+    if (payment_url) {
+      this.setState({ paymentStatus: PaymentState.Paying })
       const win = window.open(payment_url, "_blank", "toolbar=no,scrollbars=yes,resizable=no,top=150,left=150,width=500,height=500");
-      win.onload = () =>{
-        win.paymentCompletedOrCancelled = (completed) => { 
-          if(completed) alert('paid!!');
-          else alert('failed')
+      win.onload = () => {
+        win.paymentCompletedOrCancelled = (completed, from) => {
+          console.log(completed, from)
+          const { update } = this.state;
+          if (!update) {
+            if (completed)
+              this.setState({ paymentStatus: PaymentState.PaymentCompleted, updated: true })
+            else
+              this.setState({ paymentStatus: PaymentState.PaymentCancelled, updated: true })
+          }
         }
       }
     }
   }
 
   render() {
-    const { items, order_items, checkingOut, payment_url } = this.state;
+    const { items, order_items, checkingOut, paymentStatus } = this.state;
+    switch (paymentStatus) {
+      case PaymentState.Paying:
+        return ((
+          <div>
+            <h1>eshop!!</h1><br />
+            Paying...
+          </div>
+        ));
+      case PaymentState.PaymentCompleted:
+        return (
+          <div>
+            <h1>eshop!!</h1><br />
+            Payment Completed, Thank you!!!
+          </div>
+        )
+      case PaymentState.PaymentCancelled:
+        return (
+          <div>
+            <h1>eshop!!</h1><br />
+            Payment Cancelled
+          </div>
+        )
+    }
 
 
     return (
@@ -84,14 +122,14 @@ class EShop extends Component {
                 <strong>Checking out</strong> <br />
                 {order_items.map((item, index) => {
                   const fullItem = this.getItemById(item.id);
-                  if(!fullItem) return null;
+                  if (!fullItem) return null;
                   return (
                     <div key={index}>
                       {fullItem.name}(${fullItem.price}) * {item.qty} <br />
                     </div>
                   )
                 }
-                  
+
                 )}
                 <a href="javascript:void(0)" onClick={this.openURL} target="_blank">Pay</a>
               </div>

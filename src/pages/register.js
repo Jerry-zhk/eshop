@@ -1,13 +1,9 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import validatejs from 'validate.js';
 import { withContext } from '../context';
+import { withStyles } from '@material-ui/core/styles';
 
 import Grid from '@material-ui/core/Grid';
-
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
 
 import FormControl from '@material-ui/core/FormControl';
 import Input from '@material-ui/core/Input';
@@ -17,9 +13,18 @@ import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 
+import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
+
+const styles = {
+  paper: {
+    marginTop: '20px',
+    padding: '20px'
+  }
+};
+
 
 class Register extends Component {
   constructor() {
@@ -38,7 +43,7 @@ class Register extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
-  handleCheck(e){
+  handleCheck(e) {
     this.setState({ agreed: e.target.checked });
   }
   handleChange(e) {
@@ -81,7 +86,7 @@ class Register extends Component {
       console.log('dsjadjs')
       this.props.register(data.username, data.password).then(err => {
         console.log(err)
-        if(err)
+        if (err)
           this.setState({ errors: err });
       });
     }
@@ -92,50 +97,48 @@ class Register extends Component {
       <div>
         <Grid container justify="center" alignItems="center">
           <Grid item xs={12} sm={6} md={5} lg={3}>
-            {/* Card */}
-            <Card>
-              <CardHeader title="Create your account" subheader="Pay easy"  />
-              <CardContent>
-                {/* Form */}
-                <form onSubmit={this.handleSubmit}>
-                  <FormControl error={(this.state.errors.username !== undefined)} fullWidth>
-                    <InputLabel htmlFor="username">Username</InputLabel>
-                    <Input id="username" name="username" type="text" 
-                      value={this.state.data.username} onChange={this.handleChange}
-                      endAdornment={<InputAdornment><Icon>account_circle</Icon></InputAdornment>} />
-                    <FormHelperText>{this.state.errors.username}</FormHelperText>
-                  </FormControl>
-                  <FormControl error={(this.state.errors.password !== undefined)} fullWidth>
-                    <InputLabel htmlFor="password">Password</InputLabel>
-                    <Input id="password" name="password" type="password" 
-                      value={this.state.data.password} onChange={this.handleChange}
-                      endAdornment={<InputAdornment><Icon>lock</Icon></InputAdornment>} />
-                    <FormHelperText>{this.state.errors.password}</FormHelperText>
-                  </FormControl>
-                  <FormControl error={(this.state.errors.confirm_password !== undefined)} fullWidth>
-                    <InputLabel htmlFor="confirm_password">Confirm Password</InputLabel>
-                    <Input id="confirm_password" name="confirm_password" type="password" 
-                      value={this.state.data.confirm_password} onChange={this.handleChange}
-                      endAdornment={<InputAdornment><Icon>lock</Icon></InputAdornment>} />
-                    <FormHelperText>{this.state.errors.confirm_password}</FormHelperText>
-                  </FormControl>
-                  <FormControl>
-                    <FormControlLabel
-                      control={
-                        <Checkbox name="agreed" color="primary" onChange={this.handleCheck} />
-                      }
-                      label={
-                        <span>
-                          I have agreed to the <a href="#">Terms of service</a>
-                        </span>
-                      } />
-                  </FormControl>
-                  <Button color="primary" variant="contained" type="submit" size="small" fullWidth disabled={!this.state.agreed}>Register</Button>
-                </form>
-                {/* End of form */}
-              </CardContent>
-            </Card>
-            {/* End of card */}
+            <Paper className={this.props.classes.paper}>
+              <Typography variant="h6">Reigster</Typography>
+              <hr/>
+              {/* Form */}
+              <form onSubmit={this.handleSubmit}>
+                <FormControl error={(this.state.errors.username !== undefined)} fullWidth>
+                  <InputLabel htmlFor="username">Username</InputLabel>
+                  <Input id="username" name="username" type="text"
+                    value={this.state.data.username} onChange={this.handleChange}
+                    endAdornment={<InputAdornment><Icon>account_circle</Icon></InputAdornment>} />
+                  <FormHelperText>{this.state.errors.username}</FormHelperText>
+                </FormControl>
+                <FormControl error={(this.state.errors.password !== undefined)} fullWidth>
+                  <InputLabel htmlFor="password">Password</InputLabel>
+                  <Input id="password" name="password" type="password"
+                    value={this.state.data.password} onChange={this.handleChange}
+                    endAdornment={<InputAdornment><Icon>lock</Icon></InputAdornment>} />
+                  <FormHelperText>{this.state.errors.password}</FormHelperText>
+                </FormControl>
+                <FormControl error={(this.state.errors.confirm_password !== undefined)} fullWidth>
+                  <InputLabel htmlFor="confirm_password">Confirm Password</InputLabel>
+                  <Input id="confirm_password" name="confirm_password" type="password"
+                    value={this.state.data.confirm_password} onChange={this.handleChange}
+                    endAdornment={<InputAdornment><Icon>lock</Icon></InputAdornment>} />
+                  <FormHelperText>{this.state.errors.confirm_password}</FormHelperText>
+                </FormControl>
+                <FormControl>
+                  <FormControlLabel
+                    control={
+                      <Checkbox name="agreed" color="primary" onChange={this.handleCheck} />
+                    }
+                    label={
+                      <span>
+                        I have agreed to the <a href="#">Terms of service</a>
+                      </span>
+                    } />
+                </FormControl>
+                <Button color="primary" variant="contained" type="submit" size="small" fullWidth disabled={!this.state.agreed}>Register</Button>
+              </form>
+              {/* End of form */}
+            </Paper>
+
           </Grid>
         </Grid>
       </div>
@@ -144,4 +147,4 @@ class Register extends Component {
 }
 
 
-export default withContext(Register);
+export default withContext(withStyles(styles)(Register));

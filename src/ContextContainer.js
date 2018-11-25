@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Provider as SessionProvider } from './context';
 import SecuredConnect from './SecuredConnection';
+import Loading from './components/loading';
 
 class ContextComponent extends Component {
   constructor(props){
@@ -45,6 +46,7 @@ class ContextComponent extends Component {
   getProfile = (callback) => {
     return this.connection.fetch('/my-profile')
     .then(res => {
+      console.log(res)
       if(res.no_credentials){
         callback();
       }else{
@@ -80,7 +82,7 @@ class ContextComponent extends Component {
           this.connection && this.connection.state === SecuredConnect.State.CONNECTED ? (
             this.props.children
           ):(
-            <div>Loading</div>
+            <Loading/>
           )
         }
       </SessionProvider>
