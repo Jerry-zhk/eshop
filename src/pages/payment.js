@@ -61,10 +61,17 @@ class Payment extends Component {
     const { connection } = this.props;
     connection.fetch('/payment-requests')
       .then(res => {
-        console.log(res)
         if (res.error) return;
+        let requests = res.requests.map(item => {
+          item.status = "Waiting";
+          if(item.transaction_count > 0)
+            item.status = "Completed";
+          else if (item.expired === 1)
+            item.status = "Expired"
+          return item;
+        })
         this.setState({
-          requests: res.requests
+          requests: requests
         })
       })
   }
@@ -73,18 +80,18 @@ class Payment extends Component {
     e.preventDefault();
     const { connection } = this.props;
     const { amount, description, lifetime } = this.state;
-    console.log(amount, description, lifetime);
     connection.fetch('/create-request', { amount, description, lifetime })
       .then(res => {
         if (res.error) {
           alert(res.error);
         } else {
           let requests = this.state.requests;
-          requests.unshift(res.request);
+          let newRequest = res.request;
+          newRequest.status = "Waiting";
+          requests.unshift(newRequest);
           this.setState({ requests });
         }
       })
-
   }
 
   handleChangePage = (event, page) => {
@@ -191,7 +198,7 @@ class Payment extends Component {
                             <Link to={`/pay/${row.request_id}`}>{row.request_id}</Link>
                           </TableCell>
                           <TableCell numeric>{row.amount}</TableCell>
-                          <TableCell>True</TableCell>
+                          <TableCell>{row.status}</TableCell>
                           <TableCell>{row.description}</TableCell>
                           <TableCell>{row.created_at}</TableCell>
                         </TableRow>
