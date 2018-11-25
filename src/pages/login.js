@@ -67,7 +67,10 @@ class Login extends Component {
     if (errors.constructor === Object && Object.keys(errors).length === 0) {
       // submit form to login using email & password
       console.log(errors)
-      this.props.login(data.username, data.password);
+      this.props.login(data.username, data.password).then(err => {
+        if(err)
+          this.setState({errors: err});
+      });
     }
   }
 

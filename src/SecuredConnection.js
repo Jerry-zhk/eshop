@@ -105,6 +105,7 @@ class SecuredConnection {
     this.cipher_key = SHA256(cipherKey);
     this.hmac_key = SHA256(hmacKey);
 
+    console.log('hi')
     this.setState(State.CONNECTED);
   }
 
