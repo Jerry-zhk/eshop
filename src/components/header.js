@@ -44,7 +44,7 @@ class Header extends Component {
                 <Icon>menu</Icon>
               </IconButton>
             </Hidden>
-            <Typography component={Link} to="/">Secure pay</Typography>
+            <Button component={Link} to="/">Secure pay</Button>
             <div style={{ flex: '1 1 auto' }}></div>
             <Hidden smDown implementation="css" key="1">
               {
