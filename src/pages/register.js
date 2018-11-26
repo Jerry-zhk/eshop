@@ -17,6 +17,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
+import { format } from 'util';
 
 const styles = {
   paper: {
@@ -63,6 +64,21 @@ class Register extends Component {
         length: {
           minimum: 6,
           message: "must be at least 6 characters"
+        }, 
+        format: {
+          pattern: /^[A-Za-z0-9]+$/,
+          message: 'Only letters and numbers...'
+        }
+      },
+      display_name: {
+        presence: true,
+        length: {
+          minimum: 6,
+          message: "must be at least 6 characters"
+        }, 
+        format: {
+          pattern: /^[A-Za-z0-9 ]+$/,
+          message: 'Only letters, numbers and space...'
         }
       },
       password: {
@@ -84,7 +100,7 @@ class Register extends Component {
     const { errors, data } = this.state;
     if (errors.constructor === Object && Object.keys(errors).length === 0) {
       console.log('dsjadjs')
-      this.props.register(data.username, data.password).then(err => {
+      this.props.register(data.username, data.password, data.display_name).then(err => {
         console.log(err)
         if (err)
           this.setState({ errors: err });
@@ -108,6 +124,13 @@ class Register extends Component {
                     value={this.state.data.username} onChange={this.handleChange}
                     endAdornment={<InputAdornment><Icon>account_circle</Icon></InputAdornment>} />
                   <FormHelperText>{this.state.errors.username}</FormHelperText>
+                </FormControl>
+                <FormControl error={(this.state.errors.display_name !== undefined)} fullWidth>
+                  <InputLabel htmlFor="display_name">Name</InputLabel>
+                  <Input id="display_name" name="display_name" type="text"
+                    value={this.state.data.display_name} onChange={this.handleChange}
+                    endAdornment={<InputAdornment><Icon>account_circle</Icon></InputAdornment>} />
+                  <FormHelperText>{this.state.errors.display_name}</FormHelperText>
                 </FormControl>
                 <FormControl error={(this.state.errors.password !== undefined)} fullWidth>
                   <InputLabel htmlFor="password">Password</InputLabel>

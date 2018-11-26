@@ -53,6 +53,10 @@ class Login extends Component {
         length: {
           minimum: 6,
           message: "must be at least 6 characters"
+        }, 
+        format: {
+          pattern: /^[A-Za-z0-9]+$/,
+          message: 'Only letters and numbers...'
         }
       },
       password: {

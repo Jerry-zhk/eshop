@@ -24,9 +24,9 @@ class ContextComponent extends Component {
   }
 
   // Authentication
-  register = (username, password) => {
+  register = (username, password, display_name) => {
     console.log('register')
-    return this.connection.fetch('/register', {username: username, password: password})
+    return this.connection.fetch('/register', {username: username, password: password, display_name: display_name})
       .then(res => {
         if(res.error) return res.error;
         this.setState({ user: res.user });

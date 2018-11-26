@@ -28,6 +28,11 @@ class Pay extends Component {
 
   componentDidMount() {
     const { connection, user } = this.props;
+    const requestId = this.props.match.params.requestId;
+    if(isNaN(requestId)) {
+      this.setState({error: 'Invalid request222'});
+      return;
+    }
     connection.fetch('/payment-info', { requestId: this.props.match.params.requestId })
       .then(res => {
         if (res.error) {
