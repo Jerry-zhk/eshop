@@ -20,7 +20,8 @@ class Pay extends Component {
     this.state = {
       error: null,
       paymentInfo: null,
-      paymentCompleted: false
+      paymentCompleted: false,
+      redirect: false
     }
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -71,7 +72,7 @@ class Pay extends Component {
   handleSubmit(e) {
     e.preventDefault();
     const { paymentInfo } = this.state;
-    const { connection, user } = this.props;
+    const { connection, user, getProfile } = this.props;
     if (!paymentInfo) {
       alert('Invalid payment request');
       return;
@@ -82,10 +83,15 @@ class Pay extends Component {
           alert(res.error)
         } else {
           console.log('paid', res)
+          
           this.setState({ paymentCompleted: true }, () => {
             alert('Payment completed.');
             if (window.paymentCompletedOrCancelled) {
               window.close();
+            }else{
+              getProfile(() => {
+                this.setState({ redirect: true });
+              });
             }
           })
         }
@@ -94,9 +100,9 @@ class Pay extends Component {
   }
 
   render() {
-    const { paymentCompleted, error, paymentInfo } = this.state;
-    if (paymentCompleted)
-      return (<Redirect to="/home" />);
+    const { redirect, error, paymentInfo } = this.state;
+    if (redirect)
+      return (<Redirect to="/profile" />);
 
     const { classes } = this.props;
     return (

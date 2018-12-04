@@ -10,9 +10,9 @@ import Register from './pages/register';
 import Profile from './pages/profile';
 import Transaction from './pages/transaction';
 import Payment from './pages/payment';
+import AddValue from './pages/addValue';
 import Error404 from './pages/error404';
 
-import EShop from './pages/eshop';
 
 
 function Layout(props) {
@@ -33,12 +33,13 @@ function App(props) {
     <Layout>
       <Switch>
         <AppRoute exact path='/' component={Home} />
-        <AppRoute path='/pay/:requestId' component={Pay} />
+        <AppRoute path='/pay/:requestId' component={Pay} authorized={user != null} redirectTo='/login' />
         <AppRoute path='/login' component={Login} authorized={user == null} redirectTo='/' />
         <AppRoute path='/register' component={Register} authorized={user == null} redirectTo='/' />
         <AppRoute path='/profile' component={Profile} authorized={user != null} redirectTo='/login' />
         <AppRoute path='/transaction' component={Transaction} authorized={user != null} redirectTo='/login' />
         <AppRoute path='/payment' component={Payment} authorized={user != null} redirectTo='/login' />
+        <AppRoute path='/add-value' component={AddValue} authorized={user != null} redirectTo='/login' />
         <AppRoute component={Error404} />
       </Switch>
     </Layout>

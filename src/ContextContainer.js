@@ -59,8 +59,9 @@ class ContextComponent extends Component {
 
   logout = () => {
     console.log('logout')
-    return this.connection.fetch('/logout')
+    return this.connection.fetch('/logout', {csrf_token: this.state.user.csrf_token})
       .then(res => {
+        console.log(res)
         this.setState({ user: null });
       })
   }
@@ -77,6 +78,7 @@ class ContextComponent extends Component {
         register: this.register,
         login: this.login,
         logout: this.logout,
+        getProfile: this.getProfile
       }}>
         {
           this.connection && this.connection.state === SecuredConnect.State.CONNECTED ? (

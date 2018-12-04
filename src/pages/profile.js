@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom'
 import { withContext } from '../context'
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
 
 const styles = {
   paper: {
@@ -18,7 +20,7 @@ class Profile extends Component {
   }
 
   render() {
-    const { username, display_name, balance, csrf_token } = this.props.user;
+    const { username, display_name, balance } = this.props.user;
     const { classes } = this.props;
     return (
 
@@ -29,7 +31,7 @@ class Profile extends Component {
             <hr/>
             Username: {username}<br />
             Name: {display_name}<br />
-            Balance: {balance}<br />
+            Balance: {balance} <Button component={Link} to="/add-value" variant="contained" size="small">Add value</Button><br />
           </Paper>
         </Grid>
       </Grid>
