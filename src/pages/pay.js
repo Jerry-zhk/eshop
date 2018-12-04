@@ -30,7 +30,7 @@ class Pay extends Component {
     const { connection, user } = this.props;
     const requestId = this.props.match.params.requestId;
     if(isNaN(requestId)) {
-      this.setState({error: 'Invalid request222'});
+      this.setState({error: 'Invalid request'});
       return;
     }
     connection.fetch('/payment-info', { requestId: this.props.match.params.requestId })
@@ -71,12 +71,12 @@ class Pay extends Component {
   handleSubmit(e) {
     e.preventDefault();
     const { paymentInfo } = this.state;
-    const { connection } = this.props;
+    const { connection, user } = this.props;
     if (!paymentInfo) {
       alert('Invalid payment request');
       return;
     }
-    connection.fetch('/pay-with-account-balance', { requestId: paymentInfo.request_id })
+    connection.fetch('/pay-with-account-balance', { csrf_token: user.csrf_token, requestId: paymentInfo.request_id })
       .then(res => {
         if (res.error) {
           alert(res.error)

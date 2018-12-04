@@ -51,67 +51,85 @@ class SecuredConnection {
   }
 
   async start() {
-    let res;
-    this.setState(State.CONNECTING);
-    res = await fetch(this.host, {
-      method: 'post',
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({ type: 'handshake' })
-    }).then(res => {
-      console.log(res)
-      return res.json()
-    });
+    try {
 
-    // RSA public key from server
-    const publicKey = res.publicKey;
 
-    // // Client AES keys
-    // var aesKey = crypto.randomBytes(32);
-    // console.log(aesKey)
+      let res;
+      this.setState(State.CONNECTING);
+      res = await fetch(this.host, {
+        method: 'post',
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({ type: 'handshake' })
+      }).then(res => {
+        console.log(res)
+        return res.json()
+      });
 
-    // // Client RSA keys
-    // var rsaKeys = keypair({bit: 512});
-    // var buffer = Buffer.from(rsaKeys.public);
-    // console.log('hi',buffer); 
+      // RSA public key from server
+      const publicKey = res.publicKey;
 
-    // Diffie Hellman
-    const cipher_dh = crypto.getDiffieHellman('modp5');
-    const cipher_dhKey = cipher_dh.generateKeys();
+      // // Client AES keys
+      // var aesKey = crypto.randomBytes(32);
+      // console.log(aesKey)
 
-    const hmac_dh = crypto.getDiffieHellman('modp5');
-    const hmac_dhKey = hmac_dh.generateKeys();
+      // // Client RSA keys
+      // var rsaKeys = keypair({bit: 512});
+      // var buffer = Buffer.from(rsaKeys.public);
+      // console.log('hi',buffer); 
 
-    const cipher_dhKeyCiphertext = encryptWithRSA(publicKey, cipher_dhKey).toString('hex');
-    const hmac_dhKeyCiphertext = encryptWithRSA(publicKey, hmac_dhKey).toString('hex');
+      // Diffie Hellman
+      const cipher_dh = crypto.getDiffieHellman('modp5');
+      const cipher_dhKey = cipher_dh.generateKeys();
 
-    res = await fetch(this.host, {
-      method: 'post',
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({ type: 'diffie-hellman', cipher_clientKey: cipher_dhKeyCiphertext, hmac_clientKey: hmac_dhKeyCiphertext })
-    }).then(res => {
-      console.log(res)
-      return res.json()
-    });
-    this.session_id = res.session_id;
-    // server dh key for cipher
-    const cipherServerKey = Buffer.from(res.cipherKey, 'hex');
-    const cipherKey = cipher_dh.computeSecret(cipherServerKey);
-    // server dh for hmac
-    const hmacServerKey = Buffer.from(res.hmacKey, 'hex');
-    const hmacKey = hmac_dh.computeSecret(hmacServerKey);
+      const hmac_dh = crypto.getDiffieHellman('modp5');
+      const hmac_dhKey = hmac_dh.generateKeys();
 
-    // hash session key (1024 bits) -> (256 bits)
-    this.cipher_key = SHA256(cipherKey);
-    this.hmac_key = SHA256(hmacKey);
+      const cipher_dhKeyCiphertext = encryptWithRSA(publicKey, cipher_dhKey).toString('hex');
+      const hmac_dhKeyCiphertext = encryptWithRSA(publicKey, hmac_dhKey).toString('hex');
 
-    console.log('hi')
-    this.setState(State.CONNECTED);
+      res = await fetch(this.host, {
+        method: 'post',
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({ type: 'diffie-hellman', cipher_clientKey: cipher_dhKeyCiphertext, hmac_clientKey: hmac_dhKeyCiphertext })
+      }).then(res => {
+        console.log(res)
+        return res.json()
+      });
+      this.session_id = res.session_id;
+      // server dh key for cipher
+      const cipherServerKey = Buffer.from(res.cipherKey, 'hex');
+      const cipherKey = cipher_dh.computeSecret(cipherServerKey);
+      // server dh for hmac
+      const hmacServerKey = Buffer.from(res.hmacKey, 'hex');
+      const hmacKey = hmac_dh.computeSecret(hmacServerKey);
+
+
+      // hash session key (1024 bits) -> (256 bits)
+      this.cipher_key = SHA256(cipherKey);
+      this.hmac_key = SHA256(hmacKey);
+
+      const cipherKey_hmac = HMAC(this.cipher_key, cipherServerKey.toString('hex'));
+      if (cipherKey_hmac !== res.cipherKey_hmac) {
+        console.log('not valid hmac cipherkey');
+        return;
+      }
+
+      const hmacKey_hmac = HMAC(this.hmac_key, hmacServerKey.toString('hex'));
+      if (hmacKey_hmac !== res.hmacKey_hmac) {
+        console.log('not valid hmac hmacKey_hmac');
+        return;
+      }
+
+      this.setState(State.CONNECTED);
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   setState(state) {
@@ -129,10 +147,10 @@ class SecuredConnection {
     let body = {
       session_id: this.session_id,
     }
-    if(data){
+    if (data) {
       const dataString = JSON.stringify(data);
       var hmac = HMAC(this.hmac_key, dataString);
-      var dataWithHMAC = JSON.stringify({data: dataString, hmac: hmac});
+      var dataWithHMAC = JSON.stringify({ data: dataString, hmac: hmac });
       const encrypted = encryptWithAES256CBC(this.cipher_key, dataWithHMAC);
       body.data = encrypted;
     }
@@ -152,9 +170,9 @@ class SecuredConnection {
           const plaintext = decryptWithAES256CBC(this.cipher_key, iv, ciphertext);
           const dataWithHMAC = JSON.parse(plaintext);
           const hmacComputed = HMAC(this.hmac_key, dataWithHMAC.data)
-          if(dataWithHMAC.hmac !== hmacComputed){
+          if (dataWithHMAC.hmac !== hmacComputed) {
             // HMAC verification failed, data was changed
-              throw new Error('HMAC does not match data...');
+            throw new Error('HMAC does not match data...');
           }
           return JSON.parse(dataWithHMAC.data);
         } else {

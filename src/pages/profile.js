@@ -18,9 +18,8 @@ class Profile extends Component {
   }
 
   render() {
-    const { username, display_name, balance } = this.props.user;
+    const { username, display_name, balance, csrf_token } = this.props.user;
     const { classes } = this.props;
-    let userProvidedData = '></div><script>alert("hi")</script>';
     return (
 
       <Grid container justify="center" alignItems="center" className="parent-size">
@@ -31,7 +30,6 @@ class Profile extends Component {
             Username: {username}<br />
             Name: {display_name}<br />
             Balance: {balance}<br />
-            {userProvidedData}
           </Paper>
         </Grid>
       </Grid>

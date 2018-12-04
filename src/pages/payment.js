@@ -78,10 +78,12 @@ class Payment extends Component {
 
   handleCreate = (e) => {
     e.preventDefault();
-    const { connection } = this.props;
+    const { connection, user } = this.props;
     const { amount, description, lifetime } = this.state;
-    connection.fetch('/create-request', { amount, description, lifetime })
+    console.log(user.csrf_token)
+    connection.fetch('/create-request', { csrf_token: user.csrf_token, amount, description, lifetime })
       .then(res => {
+        console.log(res)
         if (res.error) {
           alert(res.error);
         } else {
