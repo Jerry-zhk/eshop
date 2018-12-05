@@ -26,7 +26,7 @@ const styles = {
   button: {
     marginTop: '10px'
   }
-};
+}; 
 
 class AddValue extends Component {
   constructor() {
